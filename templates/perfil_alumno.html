@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Perfil del alumno</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div class="container mt-5">
+
+    <h1 class="mb-4">👤 Perfil del alumno</h1>
+
+    <a href="{{ url_for('alumnos.listar_alumnos') }}" class="btn btn-secondary mb-3">
+        ⬅ Volver a alumnos
+    </a>
+
+    <!-- 🔥 DATOS + ACCIONES -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+
+            <h4>{{ alumno["nombre"] }}</h4>
+            <p class="text-muted">Edad: {{ alumno["edad"] }} años</p>
+
+            <div class="d-flex gap-2 mt-3">
+                <!-- ✅ CORREGIDO BLUEPRINT -->
+                <a href="{{ url_for('informes.crear_informe', alumno_id=alumno['id']) }}" 
+                   class="btn btn-success btn-sm">
+                    📝 Nuevo informe
+                </a>
+
+                <a href="{{ url_for('subir_archivo', alumno_id=alumno['id']) }}" 
+                   class="btn btn-warning btn-sm">
+                    📂 Subir archivo
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="row">
+
+        <!-- 📄 INFORMES -->
+        <div class="col-md-6">
+
+            <div class="card shadow mb-4">
+                <div class="card-body">
+
+                    <h5 class="card-title mb-3">📄 Informes</h5>
+
+                    {% if informes %}
+                        {% for informe in informes %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+
+                                {% if informe["fecha"] %}
+                                <p class="text-muted mb-2">
+                                    📅 {{ informe["fecha"] }}
+                                </p>
+                                {% endif %}
+
+                                <p style="white-space: pre-line;">
+                                    {{ informe["contenido"] }}
+                                </p>
+
+                                <a href="{{ url_for('descargar_pdf', id=informe['id']) }}" 
+                                   class="btn btn-primary btn-sm">
+                                    📥 PDF
+                                </a>
+
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="alert alert-info">
+                            No hay informes aún 📄
+                        </div>
+                    {% endif %}
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 📂 ARCHIVOS -->
+        <div class="col-md-6">
+
+            <div class="card shadow mb-4">
+                <div class="card-body">
+
+                    <h5 class="card-title mb-3">📂 Archivos</h5>
+
+                    {% if archivos %}
+                        <ul class="list-group">
+                            {% for archivo in archivos %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+
+                                <span>{{ archivo }}</span>
+
+                                <div class="d-flex gap-2">
+
+                                    <a href="{{ url_for('uploaded_file', alumno_id=alumno['id'], filename=archivo) }}"
+                                       class="btn btn-sm btn-outline-primary"
+                                       target="_blank">
+                                        Ver
+                                    </a>
+
+                                    <a href="{{ url_for('eliminar_archivo', alumno_id=alumno['id'], nombre=archivo) }}"
+                                       class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('¿Eliminar archivo?')">
+                                        Eliminar
+                                    </a>
+
+                                </div>
+
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-info">
+                            No hay archivos subidos 📂
+                        </div>
+                    {% endif %}
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Panel de Estudiantes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div class="container mt-5">
+
+    <h1 class="mb-4">📊 Sistema de Informes Psico-Emocionales</h1>
+
+    <!-- 🔥 ACCIONES PRINCIPALES -->
+    <div class="mb-3">
+        <a href="{{ url_for('crear_alumno') }}" class="btn btn-primary">+ Nuevo Alumno</a>
+        <a href="{{ url_for('alumnos.listar_alumnos') }}" class="btn btn-secondary">📚 Ver todos los alumnos</a>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body">
+
+            <h5 class="card-title mb-3">Listado rápido</h5>
+
+            <ul class="list-group">
+                {% for e in alumnos %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+
+                    <div>
+                        <strong>{{ e.nombre }}</strong> ({{ e.edad }} años)
+                    </div>
+
+                    <div>
+                        <!-- ✅ PERFIL CORREGIDO -->
+                        <a href="{{ url_for('alumnos.perfil_alumno', id=e.id) }}" class="btn btn-info btn-sm">
+                            Perfil
+                        </a>
+
+                        <!-- ✅ INFORME -->
+                        <a href="{{ url_for('informes.crear_informe', alumno_id=e.id) }}" class="btn btn-success btn-sm">
+                            Informe
+                        </a>
+
+                        <!-- ✅ ARCHIVOS -->
+                        <a href="{{ url_for('subir_archivo', alumno_id=e.id) }}" class="btn btn-warning btn-sm">
+                            Archivo
+                        </a>
+                    </div>
+
+                </li>
+                {% endfor %}
+            </ul>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

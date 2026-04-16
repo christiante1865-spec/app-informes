@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Subir Informe</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+    <div class="container mt-5">
+
+        <a href="/" class="btn btn-secondary mb-3">⬅ Volver</a>
+
+        <!-- 🔥 MENSAJES -->
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="alert alert-success">
+            {{ messages[0] }}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <div class="card shadow">
+            <div class="card-body">
+
+                <h2 class="mb-3">📂 Subir informe</h2>
+
+                <h5 class="text-muted mb-4">
+                    Estudiante: <strong>{{ alumno["nombre"] }}</strong>
+                </h5>
+
+                <form method="POST" enctype="multipart/form-data">
+
+                    <div class="mb-3">
+                        <label class="form-label">Seleccionar archivo (PDF)</label>
+                        <input type="file" name="archivo" class="form-control" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning">
+                        📤 Subir informe PDF
+                    </button>
+
+                </form>
+
+                <!-- 🔥 LISTADO -->
+                <hr>
+                <h6>📁 Archivos subidos</h6>
+
+                <ul class="list-group mt-2">
+                    {% for archivo in archivos %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+
+                        <span>{{ archivo }}</span>
+
+                        <div class="d-flex gap-2">
+
+                            <!-- 🔍 VER -->
+                            <a href="/uploads/{{ alumno_id }}/{{ archivo }}" class="btn btn-sm btn-outline-primary"
+                                target="_blank">
+                                Ver
+                            </a>
+
+                            <!-- 🗑 ELIMINAR -->
+                            <a href="/eliminar_archivo/{{ alumno_id }}/{{ archivo }}"
+                                class="btn btn-sm btn-outline-danger"
+                                onclick="return confirm('¿Seguro que deseas eliminar este archivo?')">
+                                Eliminar
+                            </a>
+
+                        </div>
+
+                    </li>
+                    {% endfor %}
+                </ul>
+
+            </div>
+        </div>
+
+    </div>
+
+</body>
+
+</html>
