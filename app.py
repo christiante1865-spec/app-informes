@@ -4,22 +4,23 @@ import os
 from werkzeug.utils import secure_filename
 from reportlab.platypus import SimpleDocTemplate, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
+from functools import wraps
 
 from routes.auth import auth_bp
 from routes.alumnos import alumnos_bp
 from routes.informes import informes_bp
 from routes.archivos import archivos_bp
 
-app = Flask(__name__)
-app.secret_key = "supersecretkey"
+from flask_compress import Compress
 
 # -------------------------
-# BLUEPRINTS
+# INIT APP
 # -------------------------
-app.register_blueprint(auth_bp)
-app.register_blueprint(alumnos_bp)
-app.register_blueprint(informes_bp)
-app.register_blueprint(archivos_bp)
+app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY", "supersecretkey")
+
+# 🔥 COMPRESIÓN (mejora carga)
+Compress(app)
 
 # -------------------------
 # CONFIG
@@ -33,6 +34,22 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # -------------------------
+# CACHE HEADERS (mejora velocidad)
+# -------------------------
+@app.after_request
+def add_header(response):
+    response.cache_control.max_age = 300  # cache 5 min
+    return response
+
+# -------------------------
+# BLUEPRINTS
+# -------------------------
+app.register_blueprint(auth_bp)
+app.register_blueprint(alumnos_bp)
+app.register_blueprint(informes_bp)
+app.register_blueprint(archivos_bp)
+
+# -------------------------
 # DB
 # -------------------------
 def get_db():
@@ -44,11 +61,11 @@ def get_db():
 # 🔒 LOGIN REQUIRED
 # -------------------------
 def login_required(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
         if "user_id" not in session:
             return redirect(url_for("auth.login"))
         return func(*args, **kwargs)
-    wrapper.__name__ = func.__name__
     return wrapper
 
 # -------------------------
@@ -139,7 +156,7 @@ def subir_archivo(alumno_id):
             flash("Nombre de archivo vacío ❌")
             return redirect(request.url)
 
-        if not archivo.filename.endswith(".pdf"):
+        if not archivo.filename.lower().endswith(".pdf"):
             flash("Solo se permiten archivos PDF ❌")
             return redirect(request.url)
 
@@ -188,7 +205,7 @@ def uploaded_file(alumno_id, filename):
     return send_file(os.path.join(carpeta_alumno, filename))
 
 # -------------------------
-# DESCARGAR PDF
+# DESCARGAR PDF (optimizado)
 # -------------------------
 @app.route("/descargar_pdf/<int:id>")
 @login_required
@@ -215,7 +232,12 @@ def descargar_pdf(id):
     doc.build(contenido)
     buffer.seek(0)
 
-    return send_file(buffer, as_attachment=True, download_name=f"informe_{id}.pdf")
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name=f"informe_{id}.pdf",
+        mimetype="application/pdf"
+    )
 
 # -------------------------
 # RUN
