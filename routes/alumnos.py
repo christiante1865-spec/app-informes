@@ -1,18 +1,19 @@
 from flask import Blueprint, render_template, session
-from utils.auth import login_required
-import sqlite3
-import os
+from sqlalchemy import text
+from app import db
+from functools import wraps
+
+# Si ya tienes login_required en utils.auth puedes importar ese en vez de este
+def login_required(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if "user_id" not in session:
+            from flask import redirect, url_for
+            return redirect(url_for("auth.login"))
+        return func(*args, **kwargs)
+    return wrapper
 
 alumnos_bp = Blueprint('alumnos', __name__)
-
-# -------------------------
-# DB
-# -------------------------
-def get_db():
-    conn = sqlite3.connect("database.db")
-    conn.row_factory = sqlite3.Row
-    return conn
-
 
 # -------------------------
 # 🔥 LISTAR ALUMNOS (MULTIUSUARIO)
@@ -21,14 +22,10 @@ def get_db():
 @login_required
 def listar_alumnos():
 
-    db = get_db()
-
-    alumnos = db.execute(
-        "SELECT * FROM alumnos WHERE usuario_id = ?",
-        (session["user_id"],)
+    alumnos = db.session.execute(
+        text("SELECT * FROM alumnos WHERE usuario_id = :uid"),
+        {"uid": session["user_id"]}
     ).fetchall()
-
-    db.close()
 
     return render_template("alumnos.html", alumnos=alumnos)
 
@@ -40,25 +37,21 @@ def listar_alumnos():
 @login_required
 def perfil_alumno(id):
 
-    db = get_db()
-
-    alumno = db.execute(
-        "SELECT * FROM alumnos WHERE id = ? AND usuario_id = ?",
-        (id, session["user_id"])
+    alumno = db.session.execute(
+        text("SELECT * FROM alumnos WHERE id = :id AND usuario_id = :uid"),
+        {"id": id, "uid": session["user_id"]}
     ).fetchone()
 
     if not alumno:
-        db.close()
         return "Acceso no autorizado ❌", 403
 
-    informes = db.execute(
-        "SELECT * FROM informes WHERE alumno_id = ? ORDER BY id DESC",
-        (id,)
+    informes = db.session.execute(
+        text("SELECT * FROM informes WHERE alumno_id = :id ORDER BY id DESC"),
+        {"id": id}
     ).fetchall()
 
-    db.close()
-
-    # 🔥 ARCHIVOS DEL ALUMNO
+    # 📂 Archivos del alumno
+    import os
     carpeta_alumno = os.path.join("uploads", f"alumno_{id}")
 
     if os.path.exists(carpeta_alumno):
