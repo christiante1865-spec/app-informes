@@ -1,99 +1,134 @@
 <!DOCTYPE html>
+
 <html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <title>Crear Informe</title>
 
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+```
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Estilos -->
-    <style>
-        body {
-            background-color: #f8fafc;
-        }
+<!-- Estilos -->
+<style>
+    body {
+        background-color: #f8fafc;
+    }
 
-        .card {
-            border-radius: 15px;
-        }
+    .card {
+        border-radius: 15px;
+    }
 
-        .btn {
-            border-radius: 10px;
-        }
-    </style>
+    .btn {
+        border-radius: 10px;
+    }
+</style>
+```
+
 </head>
 
 <body>
 
 <div class="container mt-5">
 
-    <!-- 🔙 VOLVER -->
-    <a href="{{ url_for('alumnos.perfil_alumno', id=alumno.id) }}" class="btn btn-secondary mb-3">
-        ⬅ Volver al perfil
-    </a>
+```
+<!-- 🔙 VOLVER -->
+<a href="{{ url_for('alumnos.perfil_alumno', id=alumno.id) }}" class="btn btn-secondary mb-3">
+    ⬅ Volver al perfil
+</a>
 
-    <!-- 🧠 TÍTULO -->
-    <div class="card shadow p-4">
+<!-- 🧠 TÍTULO -->
+<div class="card shadow p-4">
 
-        <h2 class="mb-3">📝 Crear Informe</h2>
+    <h2 class="mb-3">📝 Crear Informe</h2>
 
-        <!-- ✅ DATOS DEL ALUMNO -->
-        <p>
-            Estudiante: <strong>{{ alumno.nombre }}</strong><br>
-            Edad: {{ alumno.edad }} años
-        </p>
+    <!-- ✅ DATOS DEL ALUMNO -->
+    <p>
+        Estudiante: <strong>{{ alumno.nombre }}</strong><br>
+        Edad: {{ alumno.edad }} años
+    </p>
 
-        <hr>
+    <hr>
 
-        <!-- ⚠️ MENSAJES -->
-        {% with messages = get_flashed_messages() %}
-        {% if messages %}
-        <div class="alert alert-warning">
-            {{ messages[0] }}
-        </div>
-        {% endif %}
-        {% endwith %}
-
-        <!-- 📝 FORMULARIO -->
-        <form method="POST">
-
-            <!-- CONDUCTA -->
-            <div class="mb-3">
-                <label class="form-label">Conducta</label>
-                <select name="conducta" class="form-select" required>
-                    <option value="">Seleccionar</option>
-                    <option value="normal">Normal</option>
-                    <option value="impulsivo">Impulsivo</option>
-                </select>
-            </div>
-
-            <!-- RENDIMIENTO -->
-            <div class="mb-3">
-                <label class="form-label">Rendimiento</label>
-                <select name="rendimiento" class="form-select" required>
-                    <option value="">Seleccionar</option>
-                    <option value="bajo">Bajo</option>
-                    <option value="medio">Medio</option>
-                    <option value="alto">Alto</option>
-                </select>
-            </div>
-
-            <!-- OBSERVACIONES -->
-            <div class="mb-3">
-                <label class="form-label">Observaciones</label>
-                <textarea name="observaciones" class="form-control" rows="4"
-                    placeholder="Detalles adicionales..."></textarea>
-            </div>
-
-            <!-- BOTÓN -->
-            <button type="submit" class="btn btn-success w-100">
-                🚀 Generar Informe
-            </button>
-
-        </form>
-
+    <!-- ⚠️ MENSAJES -->
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class="alert alert-warning">
+        {{ messages[0] }}
     </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- 📝 FORMULARIO -->
+    <form method="POST">
+
+        <!-- 🧠 CONDUCTA -->
+        <div class="mb-3">
+            <label class="form-label">Conducta</label>
+
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="conducta[]" value="atencion">
+                <label class="form-check-label">Mantiene la atención</label>
+            </div>
+
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="conducta[]" value="respeto">
+                <label class="form-check-label">Respeta normas</label>
+            </div>
+
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="conducta[]" value="impulsividad">
+                <label class="form-check-label">Presenta impulsividad</label>
+            </div>
+
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="conducta[]" value="participacion">
+                <label class="form-check-label">Participa en clases</label>
+            </div>
+        </div>
+
+        <!-- 📊 RENDIMIENTO -->
+        <div class="mb-3">
+            <label class="form-label">Rendimiento</label>
+
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="rendimiento[]" value="comprension">
+                <label class="form-check-label">Comprensión de contenidos</label>
+            </div>
+
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="rendimiento[]" value="tareas">
+                <label class="form-check-label">Cumple con tareas</label>
+            </div>
+
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="rendimiento[]" value="evaluaciones">
+                <label class="form-check-label">Buen desempeño en evaluaciones</label>
+            </div>
+
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="rendimiento[]" value="autonomia">
+                <label class="form-check-label">Trabaja de forma autónoma</label>
+            </div>
+        </div>
+
+        <!-- 📝 OBSERVACIONES -->
+        <div class="mb-3">
+            <label class="form-label">Observaciones</label>
+            <textarea name="observaciones" class="form-control" rows="4"
+                placeholder="Detalles adicionales..."></textarea>
+        </div>
+
+        <!-- BOTÓN -->
+        <button type="submit" class="btn btn-success w-100">
+            🚀 Generar Informe
+        </button>
+
+    </form>
+
+</div>
+```
 
 </div>
 
