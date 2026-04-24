@@ -15,26 +15,20 @@ from routes.informes import informes_bp
 from routes.archivos import archivos_bp
 
 # -------------------------
-
 # INIT APP
-
 # -------------------------
-
-app = Flask(**name**)
+app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "supersecretkey")
 
 Compress(app)
 
 # -------------------------
-
 # DATABASE CONFIG
-
 # -------------------------
-
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
-DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL or "sqlite:///database.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -42,12 +36,9 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 # -------------------------
-
 # CONFIG
-
 # -------------------------
-
-BASE_DIR = os.path.dirname(os.path.abspath(**file**))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
@@ -55,218 +46,122 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # -------------------------
-
 # CACHE
-
 # -------------------------
-
 @app.after_request
 def add_header(response):
-response.cache_control.max_age = 300
-return response
+    response.cache_control.max_age = 300
+    return response
 
 # -------------------------
-
 # BLUEPRINTS
-
 # -------------------------
-
 app.register_blueprint(auth_bp)
 app.register_blueprint(alumnos_bp)
 app.register_blueprint(informes_bp)
 app.register_blueprint(archivos_bp)
 
 # -------------------------
-
 # LOGIN REQUIRED
-
 # -------------------------
-
 def login_required(func):
-@wraps(func)
-def wrapper(*args, **kwargs):
-if "user_id" not in session:
-return redirect(url_for("auth.login"))
-return func(*args, **kwargs)
-return wrapper
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if "user_id" not in session:
+            return redirect(url_for("auth.login"))
+        return func(*args, **kwargs)
+    return wrapper
 
 # -------------------------
-
-# 🧠 GENERADOR DE TEXTO
-
-# -------------------------
-
-def generar_texto_informe(alumno, conducta, rendimiento, observaciones):
-texto = f"Informe del estudiante {alumno.nombre}, {alumno.edad} años.\n\n"
-
-```
-texto += "Conducta:\n"
-if "atencion" in conducta:
-    texto += "- Mantiene la atención.\n"
-if "respeto" in conducta:
-    texto += "- Respeta normas.\n"
-if "impulsividad" in conducta:
-    texto += "- Presenta impulsividad.\n"
-if "participacion" in conducta:
-    texto += "- Participa activamente.\n"
-
-texto += "\nRendimiento académico:\n"
-if "comprension" in rendimiento:
-    texto += "- Buena comprensión.\n"
-if "tareas" in rendimiento:
-    texto += "- Cumple tareas.\n"
-if "evaluaciones" in rendimiento:
-    texto += "- Buen desempeño en evaluaciones.\n"
-if "autonomia" in rendimiento:
-    texto += "- Trabaja de forma autónoma.\n"
-
-if observaciones:
-    texto += f"\nObservaciones:\n{observaciones}\n"
-
-texto += "\nConclusión:\nSe recomienda continuar reforzando su desarrollo académico."
-
-return texto
-```
-
-# -------------------------
-
-# 📄 GENERAR PDF PRO
-
-# -------------------------
-
-def generar_pdf(texto):
-buffer = io.BytesIO()
-doc = SimpleDocTemplate(buffer, pagesize=letter)
-styles = getSampleStyleSheet()
-
-```
-contenido = []
-
-titulo = Paragraph("<b>INFORME PEDAGÓGICO</b>", styles["Title"])
-contenido.append(titulo)
-contenido.append(Spacer(1, 20))
-
-for linea in texto.split("\n"):
-    contenido.append(Paragraph(linea, styles["Normal"]))
-    contenido.append(Spacer(1, 10))
-
-contenido.append(Spacer(1, 20))
-contenido.append(Paragraph("Firma profesional", styles["Normal"]))
-
-doc.build(contenido)
-buffer.seek(0)
-
-return buffer
-```
-
-# -------------------------
-
 # LANDING
-
 # -------------------------
-
 @app.route("/")
 def landing():
-if "user_id" in session:
-return redirect(url_for("dashboard"))
-return render_template("landing.html")
+    if "user_id" in session:
+        return redirect(url_for("dashboard"))
+    return render_template("landing.html")
 
 # -------------------------
-
 # DASHBOARD
-
 # -------------------------
-
 @app.route("/dashboard")
 @login_required
 def dashboard():
-alumnos = db.session.execute(
-db.text("SELECT * FROM alumnos WHERE usuario_id = :uid ORDER BY id DESC LIMIT 5"),
-{"uid": session["user_id"]}
-).fetchall()
+    alumnos = db.session.execute(
+        db.text("SELECT * FROM alumnos WHERE usuario_id = :uid ORDER BY id DESC LIMIT 5"),
+        {"uid": session["user_id"]}
+    ).fetchall()
 
-```
-return render_template("index.html", alumnos=alumnos)
-```
+    return render_template("index.html", alumnos=alumnos)
 
 # -------------------------
-
 # CREAR ALUMNO
-
 # -------------------------
-
 @app.route("/crear_alumno", methods=["GET", "POST"])
 @login_required
 def crear_alumno():
 
-```
-if request.method == "POST":
-    nombre = request.form.get("nombre")
-    edad = request.form.get("edad")
+    if request.method == "POST":
+        nombre = request.form.get("nombre")
+        edad = request.form.get("edad")
 
-    if not nombre or not edad:
-        flash("Completa todos los campos ❌")
-        return redirect(request.url)
+        if not nombre or not edad:
+            flash("Completa todos los campos ❌")
+            return redirect(request.url)
 
-    db.session.execute(
-        db.text("INSERT INTO alumnos (nombre, edad, usuario_id) VALUES (:n, :e, :u)"),
-        {"n": nombre, "e": edad, "u": session["user_id"]}
-    )
-    db.session.commit()
+        db.session.execute(
+            db.text("INSERT INTO alumnos (nombre, edad, usuario_id) VALUES (:n, :e, :u)"),
+            {"n": nombre, "e": edad, "u": session["user_id"]}
+        )
+        db.session.commit()
 
-    flash("Alumno creado correctamente ✅")
-    return redirect(url_for("dashboard"))
+        flash("Alumno creado correctamente ✅")
+        return redirect(url_for("dashboard"))
 
-return render_template("crear_estudiante.html")
-```
+    return render_template("crear_estudiante.html")
 
 # -------------------------
-
-# 📊 CREAR INFORME + PDF
-
+# CREAR INFORME
 # -------------------------
-
-@app.route("/crear_informe/[int:id](int:id)", methods=["GET", "POST"])
+@app.route("/crear_informe/<int:id>", methods=["GET", "POST"])
 @login_required
 def crear_informe(id):
 
-```
-alumno = db.session.execute(
-    db.text("SELECT * FROM alumnos WHERE id = :id AND usuario_id = :uid"),
-    {"id": id, "uid": session["user_id"]}
-).fetchone()
+    alumno = db.session.execute(
+        db.text("SELECT * FROM alumnos WHERE id = :id AND usuario_id = :uid"),
+        {"id": id, "uid": session["user_id"]}
+    ).fetchone()
 
-if not alumno:
-    return "No autorizado ❌", 403
+    if not alumno:
+        return "No autorizado ❌", 403
 
-if request.method == "POST":
-    conducta = request.form.getlist("conducta[]")
-    rendimiento = request.form.getlist("rendimiento[]")
-    observaciones = request.form.get("observaciones")
+    if request.method == "POST":
+        conducta = request.form.getlist("conducta[]")
+        rendimiento = request.form.getlist("rendimiento[]")
+        observaciones = request.form.get("observaciones")
 
-    texto = generar_texto_informe(alumno, conducta, rendimiento, observaciones)
+        texto = generar_texto_informe(alumno, conducta, rendimiento, observaciones)
 
-    # Guardar en DB
-    db.session.execute(
-        db.text("INSERT INTO informes (alumno_id, contenido) VALUES (:a, :c)"),
-        {"a": id, "c": texto}
-    )
-    db.session.commit()
+        db.session.execute(
+            db.text("INSERT INTO informes (alumno_id, contenido) VALUES (:a, :c)"),
+            {"a": id, "c": texto}
+        )
+        db.session.commit()
 
-    # Generar PDF
-    pdf_buffer = generar_pdf(texto)
+        pdf_buffer = generar_pdf(texto)
 
-    return send_file(pdf_buffer, as_attachment=True, download_name=f"informe_{id}.pdf", mimetype="application/pdf")
+        return send_file(
+            pdf_buffer,
+            as_attachment=True,
+            download_name=f"informe_{id}.pdf",
+            mimetype="application/pdf"
+        )
 
-return render_template("crear_informe.html", alumno=alumno)
-```
+    return render_template("crear_informe.html", alumno=alumno)
 
 # -------------------------
-
 # RUN
-
 # -------------------------
-
-if **name** == "**main**":
-port = int(os.environ.get("PORT", 10000))
-app.run(host="0.0.0.0", port=port)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
