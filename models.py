@@ -1,31 +1,43 @@
-import sqlite3
+from extensions import db
+from datetime import datetime
 
-def get_connection():
-    return sqlite3.connect("database.db")
+# -------------------------
+# USUARIO
+# -------------------------
+class Usuario(db.Model):
+    __tablename__ = "usuarios"
+
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)
+
+    alumnos = db.relationship("Alumno", backref="usuario", lazy=True)
 
 
-def crear_tablas():
-    conn = get_connection()
-    cursor = conn.cursor()
+# -------------------------
+# ALUMNO
+# -------------------------
+class Alumno(db.Model):
+    __tablename__ = "alumnos"
 
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS alumnos (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nombre TEXT,
-        edad INTEGER,
-        curso TEXT
-    )
-    ''')
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(100), nullable=False)
+    edad = db.Column(db.Integer, nullable=False)
 
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS informes (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        alumno_id INTEGER,
-        contenido TEXT,
-        fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY(alumno_id) REFERENCES alumnos(id)
-    )
-    ''')
+    usuario_id = db.Column(db.Integer, db.ForeignKey("usuarios.id"), nullable=False)
 
-    conn.commit()
-    conn.close()
+    informes = db.relationship("Informe", backref="alumno", lazy=True)
+
+
+# -------------------------
+# INFORME
+# -------------------------
+class Informe(db.Model):
+    __tablename__ = "informes"
+
+    id = db.Column(db.Integer, primary_key=True)
+    contenido = db.Column(db.Text, nullable=False)
+
+    alumno_id = db.Column(db.Integer, db.ForeignKey("alumnos.id"), nullable=False)
+
+    fecha = db.Column(db.DateTime, default=datetime.utcnow)

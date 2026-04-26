@@ -4,3 +4,4 @@ flask_sqlalchemy==3.1.1
 Flask-Compress==1.15
 reportlab==4.4.10
 psycopg2-binary==2.9.11
+Flask-Migrate==4.0.7
