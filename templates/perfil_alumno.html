@@ -24,15 +24,26 @@
             <p class="text-muted">Edad: {{ alumno["edad"] }} años</p>
 
             <div class="d-flex flex-column flex-md-row gap-2 mt-3">
-                <a href="{{ url_for('informes.crear_informe', alumno_id=alumno['id']) }}" 
+
+                <!-- INFORME -->
+                <a href="{{ url_for('informes.crear_informe', id=alumno['id']) }}" 
                    class="btn btn-success w-100">
                     📝 Nuevo informe
                 </a>
 
-                <a href="{{ url_for('subir_archivo', alumno_id=alumno['id']) }}" 
-                   class="btn btn-warning w-100">
-                    📂 Subir archivo
-                </a>
+                <!-- SUBIR ARCHIVO -->
+                <form action="{{ url_for('archivos.subir_archivo', id=alumno['id']) }}" 
+                      method="POST" 
+                      enctype="multipart/form-data"
+                      class="w-100">
+
+                    <input type="file" name="archivo" class="form-control mb-2" required>
+
+                    <button type="submit" class="btn btn-warning w-100">
+                        📂 Subir archivo
+                    </button>
+                </form>
+
             </div>
 
         </div>
@@ -60,7 +71,8 @@
                                     {{ informe["contenido"] }}
                                 </p>
 
-                                <a href="{{ url_for('descargar_pdf', id=informe['id']) }}" 
+                                <!-- ✅ CORREGIDO -->
+                                <a href="{{ url_for('informes.descargar_pdf', id=informe['id']) }}" 
                                    class="btn btn-primary btn-sm w-100">
                                     📥 Descargar PDF
                                 </a>
@@ -95,17 +107,21 @@
                                     <span>{{ archivo }}</span>
 
                                     <div class="d-flex flex-column flex-md-row gap-2">
-                                        <a href="{{ url_for('uploaded_file', alumno_id=alumno['id'], filename=archivo) }}"
+
+                                        <!-- ✅ VER (ruta directa funcional) -->
+                                        <a href="/uploads/alumno_{{ alumno['id'] }}/{{ archivo }}"
                                            class="btn btn-sm btn-outline-primary w-100"
                                            target="_blank">
                                             Ver
                                         </a>
 
-                                        <a href="{{ url_for('eliminar_archivo', alumno_id=alumno['id'], nombre=archivo) }}"
+                                        <!-- ⚠️ ELIMINAR (solo si tienes endpoint) -->
+                                        <a href="/eliminar_archivo/{{ alumno['id'] }}/{{ archivo }}"
                                            class="btn btn-sm btn-outline-danger w-100"
                                            onclick="return confirm('¿Eliminar archivo?')">
                                             Eliminar
                                         </a>
+
                                     </div>
 
                                 </div>

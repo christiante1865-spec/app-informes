@@ -1,4 +1,4 @@
-from flask import Blueprint, request, redirect
+from flask import Blueprint, request, redirect, send_from_directory
 import os
 from werkzeug.utils import secure_filename
 
@@ -11,8 +11,9 @@ def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-@archivos_bp.route("/subir_archivo/<int:alumno_id>", methods=["POST"])
-def subir_archivo(alumno_id):
+# 🔥 SUBIR ARCHIVO (USANDO id)
+@archivos_bp.route("/subir_archivo/<int:id>", methods=["POST"])
+def subir_archivo(id):
 
     if "archivo" not in request.files:
         return "No se envió archivo"
@@ -26,10 +27,29 @@ def subir_archivo(alumno_id):
 
         filename = secure_filename(file.filename)
 
-        carpeta = os.path.join("uploads", f"alumno_{alumno_id}")
+        carpeta = os.path.join("uploads", f"alumno_{id}")
         os.makedirs(carpeta, exist_ok=True)
 
         ruta = os.path.join(carpeta, filename)
         file.save(ruta)
 
-    return redirect(f"/perfil_alumno/{alumno_id}")
+    return redirect(f"/perfil_alumno/{id}")
+
+
+# 🔥 VER ARCHIVO (ESTO SOLUCIONA EL ERROR 404)
+@archivos_bp.route("/uploads/alumno_<int:id>/<filename>")
+def uploaded_file(id, filename):
+    carpeta = os.path.join("uploads", f"alumno_{id}")
+    return send_from_directory(carpeta, filename)
+
+
+# 🔥 ELIMINAR ARCHIVO (OPCIONAL PERO RECOMENDADO)
+@archivos_bp.route("/eliminar_archivo/<int:id>/<nombre>")
+def eliminar_archivo(id, nombre):
+    carpeta = os.path.join("uploads", f"alumno_{id}")
+    ruta = os.path.join(carpeta, nombre)
+
+    if os.path.exists(ruta):
+        os.remove(ruta)
+
+    return redirect(f"/perfil_alumno/{id}")

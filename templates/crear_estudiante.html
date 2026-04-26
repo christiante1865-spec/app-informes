@@ -1,31 +1,73 @@
-<div class="container py-4">
+<!DOCTYPE html>
+<html lang="es">
 
-    <h1 class="mb-4 text-center">👤 Nuevo Estudiante</h1>
+<head>
+    <meta charset="UTF-8">
+    <title>Nuevo Estudiante</title>
 
-    <a href="/" class="btn btn-secondary w-100 mb-3">⬅ Volver</a>
+    <!-- ✅ Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <div class="card shadow col-md-6 mx-auto">
-        <div class="card-body">
+    <!-- 🎨 Estilos -->
+    <style>
+        body {
+            background-color: #f8fafc;
+        }
 
-            <form method="POST">
+        .card {
+            border-radius: 15px;
+        }
 
-                <div class="mb-3">
-                    <label>Nombre</label>
-                    <input type="text" name="nombre" class="form-control">
-                </div>
+        .btn {
+            border-radius: 10px;
+        }
+    </style>
+</head>
 
-                <div class="mb-3">
-                    <label>Edad</label>
-                    <input type="number" name="edad" class="form-control">
-                </div>
+<body>
 
-                <button class="btn btn-primary w-100">
-                    Guardar
-                </button>
+<div class="container mt-5">
 
-            </form>
+    <!-- 🔙 VOLVER -->
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary mb-3">
+        ⬅ Volver
+    </a>
 
+    <div class="card shadow p-4">
+
+        <h2 class="mb-3">👤 Nuevo Estudiante</h2>
+
+        <!-- ⚠️ MENSAJES -->
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="alert alert-warning">
+            {{ messages[0] }}
         </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- 📝 FORMULARIO -->
+        <form method="POST">
+
+            <div class="mb-3">
+                <label class="form-label">Nombre</label>
+                <input type="text" name="nombre" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Edad</label>
+                <input type="number" name="edad" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">
+                💾 Guardar
+            </button>
+
+        </form>
+
     </div>
 
 </div>
+
+</body>
+</html>

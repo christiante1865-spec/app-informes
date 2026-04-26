@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, session
 from sqlalchemy import text
-from app import db
+from extensions import db
+from sqlalchemy import text
 from functools import wraps
 
 # Si ya tienes login_required en utils.auth puedes importar ese en vez de este

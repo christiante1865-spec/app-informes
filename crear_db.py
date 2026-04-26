@@ -1,6 +1,12 @@
 import sqlite3
+import os
 
-conn = sqlite3.connect("database.db")
+# 📁 Ruta absoluta (CLAVE para evitar errores)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+db_path = os.path.join(BASE_DIR, "database.db")
+
+# 🔗 Conexión correcta
+conn = sqlite3.connect(db_path)
 c = conn.cursor()
 
 # 🔐 TABLA USUARIOS
@@ -12,7 +18,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
 )
 """)
 
-# 👤 TABLA ALUMNOS (CORREGIDO)
+# 👤 TABLA ALUMNOS
 c.execute("""
 CREATE TABLE IF NOT EXISTS alumnos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -23,7 +29,7 @@ CREATE TABLE IF NOT EXISTS alumnos (
 )
 """)
 
-# 📄 TABLA INFORMES (CORREGIDO)
+# 📄 TABLA INFORMES
 c.execute("""
 CREATE TABLE IF NOT EXISTS informes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,7 +40,7 @@ CREATE TABLE IF NOT EXISTS informes (
 )
 """)
 
-# 📂 TABLA ARCHIVOS (OPCIONAL FUTURO)
+# 📂 TABLA ARCHIVOS
 c.execute("""
 CREATE TABLE IF NOT EXISTS archivos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -48,4 +54,4 @@ CREATE TABLE IF NOT EXISTS archivos (
 conn.commit()
 conn.close()
 
-print("Base de datos corregida y lista ✅")
+print("✅ Base de datos creada correctamente en:", db_path)

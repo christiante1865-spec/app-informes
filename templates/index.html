@@ -24,6 +24,7 @@
     <div class="card shadow">
         <div class="card-body">
 
+            {% if alumnos %}
             <ul class="list-group">
                 {% for e in alumnos %}
                 <li class="list-group-item">
@@ -35,9 +36,32 @@
                         </div>
 
                         <div class="d-flex flex-column flex-md-row gap-2">
-                            <a href="{{ url_for('alumnos.perfil_alumno', id=e.id) }}" class="btn btn-info btn-sm w-100">Perfil</a>
-                            <a href="{{ url_for('informes.crear_informe', alumno_id=e.id) }}" class="btn btn-success btn-sm w-100">Informe</a>
-                            <a href="{{ url_for('subir_archivo', alumno_id=e.id) }}" class="btn btn-warning btn-sm w-100">Archivo</a>
+
+                            <!-- PERFIL -->
+                            <a href="{{ url_for('alumnos.perfil_alumno', id=e.id) }}" 
+                               class="btn btn-info btn-sm w-100">
+                                Perfil
+                            </a>
+
+                            <!-- INFORME -->
+                            <a href="{{ url_for('informes.crear_informe', id=e.id) }}" 
+                               class="btn btn-success btn-sm w-100">
+                                Informe
+                            </a>
+
+                            <!-- ARCHIVO (CORREGIDO: ahora es FORM POST) -->
+                            <form action="{{ url_for('archivos.subir_archivo', id=e.id) }}" 
+                                  method="POST" 
+                                  enctype="multipart/form-data"
+                                  class="w-100">
+
+                                <input type="file" name="archivo" class="form-control mb-1" required>
+
+                                <button type="submit" class="btn btn-warning btn-sm w-100">
+                                    Subir archivo
+                                </button>
+                            </form>
+
                         </div>
 
                     </div>
@@ -45,6 +69,9 @@
                 </li>
                 {% endfor %}
             </ul>
+            {% else %}
+                <p class="text-center text-muted">No hay alumnos aún.</p>
+            {% endif %}
 
         </div>
     </div>
