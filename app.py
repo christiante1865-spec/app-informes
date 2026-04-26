@@ -46,10 +46,8 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # INIT DB
 db.init_app(app)
 
-# ✅ MIGRATIONS (CORRECTO)
+# ✅ MIGRATIONS
 migrate = Migrate(app, db)
-
-# ❌ ELIMINADO: db.create_all() (NO usar en producción)
 
 # -------------------------
 # CONFIG
@@ -84,7 +82,7 @@ app.register_blueprint(archivos_bp)
 def login_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        if "user_id" not in session:
+        if "usuario_id" not in session:
             return redirect(url_for("auth.login"))
         return func(*args, **kwargs)
     return wrapper
@@ -107,7 +105,7 @@ def dashboard():
     try:
         alumnos = db.session.execute(
             text("SELECT * FROM alumnos WHERE usuario_id = :uid ORDER BY id DESC LIMIT 5"),
-            {"uid": session["user_id"]}
+            {"uid": session["usuario_id"]}
         ).fetchall()
     except Exception as e:
         print("❌ ERROR DASHBOARD:", e)
@@ -130,7 +128,7 @@ def crear_alumno():
         try:
             db.session.execute(
                 text("INSERT INTO alumnos (nombre, edad, usuario_id) VALUES (:n, :e, :u)"),
-                {"n": nombre, "e": edad, "u": session["user_id"]}
+                {"n": nombre, "e": edad, "u": session["usuario_id"]}
             )
             db.session.commit()
             flash("Alumno creado correctamente ✅")
