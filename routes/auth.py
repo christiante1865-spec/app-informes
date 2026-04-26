@@ -1,16 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, session, flash, url_for
-import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 
-auth_bp = Blueprint('auth', __name__)
+from extensions import db
+from models import Usuario
 
-# -------------------------
-# DB
-# -------------------------
-def get_db():
-    conn = sqlite3.connect("database.db")
-    conn.row_factory = sqlite3.Row
-    return conn
+auth_bp = Blueprint('auth', __name__)
 
 
 # -------------------------
@@ -27,16 +21,13 @@ def login():
             flash("Completa todos los campos ❌")
             return redirect(request.url)
 
-        db = get_db()
-        user = db.execute(
-            "SELECT * FROM usuarios WHERE email=?",
-            (email,)
-        ).fetchone()
-        db.close()
+        # ✅ Buscar usuario en PostgreSQL (NO sqlite)
+        user = Usuario.query.filter_by(email=email).first()
 
-        if user and check_password_hash(user["password"], password):
-            session["user_id"] = user["id"]
-            session["email"] = user["email"]
+        if user and check_password_hash(user.password, password):
+            # 🔥 CLAVE: mismo nombre que usamos en alumnos
+            session["usuario_id"] = user.id
+            session["email"] = user.email
 
             return redirect(url_for("dashboard"))
         else:
@@ -68,23 +59,29 @@ def register():
             flash("Completa todos los campos ❌")
             return redirect(request.url)
 
+        # Verificar si ya existe
+        user_exist = Usuario.query.filter_by(email=email).first()
+        if user_exist:
+            flash("El usuario ya existe ❌")
+            return redirect(request.url)
+
         hashed_password = generate_password_hash(password)
 
-        db = get_db()
         try:
-            db.execute(
-                "INSERT INTO usuarios (email, password) VALUES (?, ?)",
-                (email, hashed_password)
+            nuevo_usuario = Usuario(
+                email=email,
+                password=hashed_password
             )
-            db.commit()
+
+            db.session.add(nuevo_usuario)
+            db.session.commit()
 
             flash("Usuario creado correctamente ✅")
             return redirect(url_for("auth.login"))
 
-        except sqlite3.IntegrityError:
-            flash("El usuario ya existe ❌")
-
-        finally:
-            db.close()
+        except Exception as e:
+            db.session.rollback()
+            print("❌ ERROR REGISTRO:", e)
+            flash("Error al crear usuario ❌")
 
     return render_template("register.html")

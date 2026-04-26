@@ -1,68 +1,64 @@
-from flask import Blueprint, render_template, session
-from sqlalchemy import text
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from extensions import db
-from sqlalchemy import text
-from functools import wraps
+from models import Alumno
 
-# Si ya tienes login_required en utils.auth puedes importar ese en vez de este
-def login_required(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        if "user_id" not in session:
-            from flask import redirect, url_for
-            return redirect(url_for("auth.login"))
-        return func(*args, **kwargs)
-    return wrapper
-
-alumnos_bp = Blueprint('alumnos', __name__)
+alumnos_bp = Blueprint("alumnos", __name__)
 
 # -------------------------
-# 🔥 LISTAR ALUMNOS (MULTIUSUARIO)
+# CREAR ALUMNO
+# -------------------------
+@alumnos_bp.route("/crear_alumno", methods=["GET", "POST"])
+def crear_alumno():
+
+    # 🔒 Validar usuario logueado
+    usuario_id = session.get("usuario_id")
+    if not usuario_id:
+        flash("Debes iniciar sesión")
+        return redirect(url_for("auth.login"))
+
+    if request.method == "POST":
+        try:
+            nombre = request.form.get("nombre")
+            edad = request.form.get("edad")
+
+            # Validación básica
+            if not nombre or not edad:
+                flash("Todos los campos son obligatorios ❌")
+                return redirect(url_for("alumnos.crear_alumno"))
+
+            # Crear alumno correctamente (SIN HARDCODE)
+            nuevo_alumno = Alumno(
+                nombre=nombre,
+                edad=int(edad),
+                usuario_id=usuario_id
+            )
+
+            db.session.add(nuevo_alumno)
+            db.session.commit()
+
+            flash("Alumno creado correctamente ✅")
+            return redirect(url_for("dashboard"))
+
+        except Exception as e:
+            db.session.rollback()
+            print("❌ ERROR CREAR ALUMNO:", e)
+            flash("Error al crear alumno ❌")
+            return redirect(url_for("alumnos.crear_alumno"))
+
+    return render_template("crear_alumno.html")
+
+
+# -------------------------
+# LISTAR ALUMNOS
 # -------------------------
 @alumnos_bp.route("/alumnos")
-@login_required
 def listar_alumnos():
 
-    alumnos = db.session.execute(
-        text("SELECT * FROM alumnos WHERE usuario_id = :uid"),
-        {"uid": session["user_id"]}
-    ).fetchall()
+    usuario_id = session.get("usuario_id")
+    if not usuario_id:
+        flash("Debes iniciar sesión")
+        return redirect(url_for("auth.login"))
+
+    alumnos = Alumno.query.filter_by(usuario_id=usuario_id).order_by(Alumno.id.desc()).all()
 
     return render_template("alumnos.html", alumnos=alumnos)
-
-
-# -------------------------
-# 🔥 PERFIL DEL ALUMNO
-# -------------------------
-@alumnos_bp.route("/perfil_alumno/<int:id>")
-@login_required
-def perfil_alumno(id):
-
-    alumno = db.session.execute(
-        text("SELECT * FROM alumnos WHERE id = :id AND usuario_id = :uid"),
-        {"id": id, "uid": session["user_id"]}
-    ).fetchone()
-
-    if not alumno:
-        return "Acceso no autorizado ❌", 403
-
-    informes = db.session.execute(
-        text("SELECT * FROM informes WHERE alumno_id = :id ORDER BY id DESC"),
-        {"id": id}
-    ).fetchall()
-
-    # 📂 Archivos del alumno
-    import os
-    carpeta_alumno = os.path.join("uploads", f"alumno_{id}")
-
-    if os.path.exists(carpeta_alumno):
-        archivos = os.listdir(carpeta_alumno)
-    else:
-        archivos = []
-
-    return render_template(
-        "perfil_alumno.html",
-        alumno=alumno,
-        informes=informes,
-        archivos=archivos
-    )
