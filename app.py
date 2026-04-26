@@ -39,15 +39,24 @@ db_path = os.path.join(BASE_DIR, "database.db")
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL or f"sqlite:///{db_path}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# INIT DB (evita import circular)
+# INIT DB
 db.init_app(app)
+
+# 🔥 CREAR TABLAS AUTOMÁTICAMENTE (SOLUCIÓN ERROR)
+with app.app_context():
+    db.create_all()
 
 # -------------------------
 # CONFIG
 # -------------------------
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
+INSTANCE_FOLDER = os.path.join(BASE_DIR, "instance")
+
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+# crear carpetas si no existen (IMPORTANTE EN RENDER)
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(INSTANCE_FOLDER, exist_ok=True)
 
 # -------------------------
 # CACHE
@@ -77,7 +86,7 @@ def login_required(func):
     return wrapper
 
 # -------------------------
-# LOGOUT (🔥 SOLUCION LOGIN)
+# LOGOUT
 # -------------------------
 @app.route("/logout")
 def logout():
@@ -131,7 +140,7 @@ def crear_alumno():
     return render_template("crear_estudiante.html")
 
 # -------------------------
-# 🧠 GENERADOR DE TEXTO
+# GENERADOR DE TEXTO
 # -------------------------
 def generar_texto_informe(alumno, conducta, rendimiento, observaciones):
     texto = f"Informe del estudiante {alumno.nombre}, {alumno.edad} años.\n\n"
@@ -164,7 +173,7 @@ def generar_texto_informe(alumno, conducta, rendimiento, observaciones):
     return texto
 
 # -------------------------
-# 📄 GENERAR PDF
+# GENERAR PDF
 # -------------------------
 def generar_pdf(texto):
     buffer = io.BytesIO()
