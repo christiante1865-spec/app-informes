@@ -11,6 +11,9 @@ from sqlalchemy import text
 # DB
 from extensions import db
 
+# 🔥 IMPORTANTE: importar modelos para que existan las tablas
+from models import *
+
 # BLUEPRINTS
 from routes.auth import auth_bp
 from routes.alumnos import alumnos_bp
@@ -42,7 +45,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # INIT DB
 db.init_app(app)
 
-# 🔥 CREAR TABLAS AUTOMÁTICAMENTE (SOLUCIÓN ERROR)
+# 🔥 CREAR TABLAS AUTOMÁTICAMENTE (YA FUNCIONARÁ)
 with app.app_context():
     db.create_all()
 
@@ -54,7 +57,6 @@ INSTANCE_FOLDER = os.path.join(BASE_DIR, "instance")
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-# crear carpetas si no existen (IMPORTANTE EN RENDER)
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(INSTANCE_FOLDER, exist_ok=True)
 
