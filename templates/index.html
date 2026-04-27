@@ -12,44 +12,52 @@
 
     <h1 class="mb-4 text-center text-md-start">📊 Sistema</h1>
 
+    <!-- BOTONES PRINCIPALES -->
     <div class="d-flex flex-column flex-md-row gap-2 mb-3">
-        <a href="{{ url_for('crear_alumno') }}" class="btn btn-primary w-100">
+
+        <a href="{{ url_for('alumnos.crear_alumno') }}" class="btn btn-primary w-100">
             + Nuevo Alumno
         </a>
+
         <a href="{{ url_for('alumnos.listar_alumnos') }}" class="btn btn-secondary w-100">
             📚 Ver alumnos
         </a>
+
     </div>
 
+    <!-- LISTADO -->
     <div class="card shadow">
         <div class="card-body">
 
             {% if alumnos %}
             <ul class="list-group">
+
                 {% for e in alumnos %}
                 <li class="list-group-item">
 
-                    <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+                    <div class="d-flex flex-column flex-md-row justify-content-between gap-2 align-items-md-center">
 
+                        <!-- INFO ALUMNO -->
                         <div>
                             <strong>{{ e.nombre }}</strong> ({{ e.edad }} años)
                         </div>
 
+                        <!-- ACCIONES -->
                         <div class="d-flex flex-column flex-md-row gap-2">
 
                             <!-- PERFIL -->
                             <a href="{{ url_for('alumnos.perfil_alumno', id=e.id) }}" 
                                class="btn btn-info btn-sm w-100">
-                                Perfil
+                                👤 Perfil
                             </a>
 
                             <!-- INFORME -->
                             <a href="{{ url_for('informes.crear_informe', id=e.id) }}" 
                                class="btn btn-success btn-sm w-100">
-                                Informe
+                                📄 Informe
                             </a>
 
-                            <!-- ARCHIVO (CORREGIDO: ahora es FORM POST) -->
+                            <!-- SUBIR ARCHIVO -->
                             <form action="{{ url_for('archivos.subir_archivo', id=e.id) }}" 
                                   method="POST" 
                                   enctype="multipart/form-data"
@@ -58,8 +66,9 @@
                                 <input type="file" name="archivo" class="form-control mb-1" required>
 
                                 <button type="submit" class="btn btn-warning btn-sm w-100">
-                                    Subir archivo
+                                    📎 Subir archivo
                                 </button>
+
                             </form>
 
                         </div>
@@ -68,6 +77,7 @@
 
                 </li>
                 {% endfor %}
+
             </ul>
             {% else %}
                 <p class="text-center text-muted">No hay alumnos aún.</p>

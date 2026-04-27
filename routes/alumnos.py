@@ -10,7 +10,6 @@ alumnos_bp = Blueprint("alumnos", __name__)
 @alumnos_bp.route("/crear_alumno", methods=["GET", "POST"])
 def crear_alumno():
 
-    # 🔒 Validar usuario logueado
     usuario_id = session.get("usuario_id")
     if not usuario_id:
         flash("Debes iniciar sesión")
@@ -21,12 +20,10 @@ def crear_alumno():
             nombre = request.form.get("nombre")
             edad = request.form.get("edad")
 
-            # Validación básica
             if not nombre or not edad:
                 flash("Todos los campos son obligatorios ❌")
                 return redirect(url_for("alumnos.crear_alumno"))
 
-            # Crear alumno correctamente (SIN HARDCODE)
             nuevo_alumno = Alumno(
                 nombre=nombre,
                 edad=int(edad),
@@ -62,3 +59,23 @@ def listar_alumnos():
     alumnos = Alumno.query.filter_by(usuario_id=usuario_id).order_by(Alumno.id.desc()).all()
 
     return render_template("alumnos.html", alumnos=alumnos)
+
+
+# -------------------------
+# PERFIL ALUMNO (🔴 ESTE TE FALTABA)
+# -------------------------
+@alumnos_bp.route("/alumno/<int:id>")
+def perfil_alumno(id):
+
+    usuario_id = session.get("usuario_id")
+    if not usuario_id:
+        flash("Debes iniciar sesión")
+        return redirect(url_for("auth.login"))
+
+    alumno = Alumno.query.filter_by(id=id, usuario_id=usuario_id).first()
+
+    if not alumno:
+        flash("Alumno no encontrado ❌")
+        return redirect(url_for("alumnos.listar_alumnos"))
+
+    return render_template("perfil_alumno.html", alumno=alumno)
